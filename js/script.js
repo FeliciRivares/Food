@@ -119,5 +119,54 @@ window.addEventListener('DOMContentLoaded', () => {
             }
     } 
     setClock('.timer', deadline);
+    // -------------------------модальне вікно---------------------------
+    const modalTrigger = document.querySelectorAll('[data-modal]'),
+        modal = document.querySelector('.modal'),
+        modalCloseBtn = document.querySelector('[data-close]');
+    // привязка відкриття мождального вікна до декіькох елементів
+    function openModal(){
+        modal.classList.add('show');
+        modal.classList.remove('hide');
+        document.body.style.overflow = 'hidden';
+        // якщо користувавч відкрив вже модальне вікно очищуємо інтервал 
+        clearInterval(modalTimerId);
+    }
+    modalTrigger.forEach(btn => {
+        btn.addEventListener('click',openModal);
+    });
+    // закриття модального вікна 
+    function closeModal(){
+        modal.classList.add('hide');
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+        modalCloseBtn.addEventListener('click', closeModal);
+        // закриття модального вікна по кліку за територією діалогового вікна 
+        modal.addEventListener('click', (e) => {
+            if (e.target == modal){
+                closeModal();
+            }
+        });
+         // закриття модального вікна по кліку на esc 
+         document.addEventListener('keydown', (e) => {
+            if (e.code === "Escape" && modal.classList.contains('show')){
+                closeModal();
+            }
+         });
+    // виклик модального вікна з плином часу 
+         const modalTimerId = setTimeout(openModal, 5000);
+    // виклик модального вікна якщо сторінка догорнута докінця 
+        function showModalByScroll(){
+            if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight -1){
+                openModal();
+                // функція видаляється після першого виклику 
+                window.removeEventListener('scroll', showModalByScroll);
+            }
+        }
+         window.addEventListener('scroll', showModalByScroll);
 
+
+
+
+         
 });
