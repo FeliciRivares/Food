@@ -121,8 +121,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setClock('.timer', deadline);
     // -------------------------модальне вікно---------------------------
     const modalTrigger = document.querySelectorAll('[data-modal]'),
-        modal = document.querySelector('.modal'),
-        modalCloseBtn = document.querySelector('[data-close]');
+        modal = document.querySelector('.modal');
     // привязка відкриття мождального вікна до декіькох елементів
     function openModal(){
         modal.classList.add('show');
@@ -140,10 +139,10 @@ window.addEventListener('DOMContentLoaded', () => {
         modal.classList.remove('show');
         document.body.style.overflow = '';
     }
-        modalCloseBtn.addEventListener('click', closeModal);
+
         // закриття модального вікна по кліку за територією діалогового вікна 
         modal.addEventListener('click', (e) => {
-            if (e.target == modal){
+            if (e.target == modal || e.target.getAttribute('data-close')==''){
                 closeModal();
             }
         });
@@ -154,7 +153,7 @@ window.addEventListener('DOMContentLoaded', () => {
             }
          });
     // виклик модального вікна з плином часу 
-          const modalTimerId = setTimeout(openModal, 5000);
+          const modalTimerId = setTimeout(openModal, 50000);
     // виклик модального вікна якщо сторінка догорнута докінця 
         function showModalByScroll(){
             if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight -1){
@@ -237,4 +236,86 @@ window.addEventListener('DOMContentLoaded', () => {
             '.menu .container',
             'menu__item'
         ).render();
+
+        //  -----------------------Робота з формами----------------------------------
+        const forms = document.querySelectorAll('form');
+
+        const message ={
+            loading: 'img/form/spinner.svg',
+            success: 'Thank you, we will contact you soon',
+            failure: 'Soo... we have a problem'
+
+        };
+
+        forms.forEach(item =>{
+            postData(item);
+        });
+
+        function postData(form){
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const statusMessage = document.createElement('img');
+                statusMessage.src = message.loading;
+                statusMessage.style.cssText = `
+                    display: block;
+                    margin: 0 auto;
+                `;
+                // поміщаємо спінер під форму 
+                form.insertAdjacentElement('afterend', statusMessage);
+                const request  = new XMLHttpRequest();
+                request.open('POST', 'server.php');
+                
+
+                request.setRequestHeader('Content-type', 'application/json');
+                const formData = new FormData(form); 
+
+                const object = {};
+                formData.forEach(function(value, key){
+                    object[key] = value;
+                });
+
+                const json = JSON.stringify(object);
+
+                request.send(json);
+
+                request.addEventListener('load', () => {
+                    if(request.status === 200){
+                        console.log(request.response);
+                        showThanksModal(message.success);
+                        form.reset();
+                        setTimeout(() => {
+                            statusMessage.remove();
+                        }, 2000);
+
+                    }else{
+                        showThanksModal(message.failure);
+                    }
+                });
+            });
+        }
+        // редизайн форми 
+         function showThanksModal(message){
+            const prevModalDialog = document.querySelector('.modal__dialog');
+
+            prevModalDialog.classList.add('hide');
+            openModal();
+            const thanksModal = document.createElement('div');
+            thanksModal.classList.add('modal__dialog');
+            thanksModal.innerHTML = `
+            <div class = "modal__content">
+                <div class = "modal__close" data-close>&times;</div>
+                <div class= "modal__title">${message}</div>
+            </div>
+            `;
+
+            document.querySelector('.modal').append(thanksModal);
+            setTimeout(() =>{
+                thanksModal.remove();
+                prevModalDialog.classList.add('show');
+                prevModalDialog.classList.remove('hide');
+                closeModal();
+            }, 4000);
+         }
+
 });
