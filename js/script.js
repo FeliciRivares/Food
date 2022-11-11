@@ -263,10 +263,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 `;
                 // поміщаємо спінер під форму 
                 form.insertAdjacentElement('afterend', statusMessage);
-                
-            
 
-                
                 const formData = new FormData(form); 
 
                 const object = {};
@@ -316,5 +313,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 closeModal();
             }, 4000);
          }
-        
-});
+        fetch('http://localhost:3000/menu')
+            .then(data => data.json())
+            .then(res => console.log(res));
+    });
